@@ -235,7 +235,38 @@ namespace solution {
             return false;
         }
 
+        bool dfs( int from, int visited ) {
+            if ( visited == ( 1 << N ) - 1 )
+                return true;
+            for ( int i = 0; i < AC[from]; ++ i ) {
+                int to = i;
+                int key = T[to];
+                int bi = 1 << to;
+                if ( visited & bi )
+                    continue;
+                if ( CNT[key] == 0 )
+                    continue;
+                CNT[key] --;
+                for ( Set::iterator it_i = KS[to].begin(); it_i != KS[to].end(); ++ it_i )
+                    CNT[*it_i] += KSC[to][*it_i];
+                if ( dfs(to, visited^bi) )
+                    return true;
+                for ( Set::iterator it_i = KS[to].begin(); it_i != KS[to].end(); ++ it_i )
+                    CNT[*it_i] -= KSC[to][*it_i];
+                CNT[key] ++;
+            }
+            return false;
+        }
+
         bool solve() {
+            grouping();
+            generate_graph();
+            for ( int i = 0; i < init_keys_num; ++ i )
+                CNT[init_keys[i]] ++;
+            return dfs(0, 1);
+        }
+
+        bool solve2() {
             grouping();
             generate_graph();
 
