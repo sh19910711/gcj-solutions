@@ -64,6 +64,7 @@ namespace solution {
     int box_count;
     int box_key_types[MAX_BOXES];
     int box_keys[MAX_BOXES][MAX_KEYS];
+    int box_key_ids[MAX_BOXES][MAX_KEYS];
     int box_keys_count[MAX_BOXES];
     bool b2b[MAX_BOXES][MAX_BOXES];
     bool k2k[MAX_KEYS][MAX_KEYS];
@@ -86,8 +87,9 @@ namespace solution {
         key_order.clear();
     }
 
-    void add_key( int key_type ) {
-        key_types[key_count ++] = key_type;
+    int add_key( int key_type ) {
+        key_types[key_count] = key_type;
+        return key_count ++;
     }
 
     class Solution: public ISolution {
@@ -116,7 +118,7 @@ namespace solution {
             }
             for ( int i = 0; i < box_count; ++ i ) {
                 for ( int j = 0; j < box_keys_count[i]; ++ j ) {
-                    add_key(box_keys[i][j]);
+                    box_key_ids[i][j] = add_key(box_keys[i][j]);
                 }
             }
 
@@ -133,6 +135,25 @@ namespace solution {
             
             // ある箱fromについて、fromに含まれる鍵で開くことができる箱toがあればb2b[from][to]をtrueにする
             // ワーシャルフロイド法でb2bの間接的な参照になっている部分を接続する
+            for ( int from = 0; from < box_count; ++ from ) {
+                for ( int i = 0; i < box_keys_count[from]; ++ i ) {
+                    int key = box_key_ids[from][i];
+                    for ( int j = 0; j < key_open_boxes_count[key]; ++ j ) {
+                        int to = key_open_boxes[key][j];
+                        if ( from == to )
+                            continue;
+                        b2b[from][to] = true;
+                    }
+                }
+            }
+            for ( int k = 0; k < box_count; ++ k ) {
+                for ( int i = 0; i < box_count; ++ i ) {
+                    for ( int j = 0; j < box_count; ++ j ) {
+                        if ( b2b[i][k] && b2b[k][j] )
+                            b2b[i][j] = true;
+                    }
+                }
+            }
             
             // ある鍵fromについて、fromで開くことができる箱に含まれる鍵toがあればk2k[from][to]をtrueにする
             // ワーシャルフロイド法でk2kの間接的な参照になっている部分を接続する
