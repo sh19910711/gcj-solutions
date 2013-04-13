@@ -58,6 +58,8 @@ namespace solution {
     int init_keys[MAX_KEYS];
     int init_keys_count;
     int key_types[MAX_KEYS];
+    int key_open_boxes[MAX_KEYS][MAX_BOXES];
+    int key_open_boxes_count[MAX_KEYS];
     int key_count;
     int box_count;
     int box_key_types[MAX_BOXES];
@@ -69,6 +71,8 @@ namespace solution {
     Map key_order;
 
     void global_init() {
+        for ( int i = 0; i < MAX_KEYS; ++ i )
+            key_open_boxes_count[i] = 0;
         key_count = 0;
         for ( int i = 0; i < MAX_BOXES; ++ i )
             box_keys_count[i] = 0;
@@ -82,8 +86,8 @@ namespace solution {
         key_order.clear();
     }
 
-    void add_key( int type ) {
-        key_types[key_count ++] = type;
+    void add_key( int key_type ) {
+        key_types[key_count ++] = key_type;
     }
 
     class Solution: public ISolution {
@@ -117,6 +121,15 @@ namespace solution {
             }
 
             // 鍵ごとに開くことができる箱を計算する
+            for ( int i = 0; i < key_count; ++ i ) {
+                int key_type = key_types[i];
+                for ( int j = 0; j < box_count; ++ j ) {
+                    int box_key_type = box_key_types[j];
+                    if ( key_type == box_key_type ) {
+                        key_open_boxes[i][key_open_boxes_count[i] ++] = j;
+                    }
+                }
+            }
             
             // ある箱fromについて、fromに含まれる鍵で開くことができる箱toがあればb2b[from][to]をtrueにする
             // ワーシャルフロイド法でb2bの間接的な参照になっている部分を接続する
