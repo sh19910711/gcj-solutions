@@ -57,10 +57,10 @@ namespace solution {
 
     int init_keys[MAX_KEYS];
     int init_keys_count;
-    int key_type[MAX_KEYS];
+    int key_types[MAX_KEYS];
     int key_count;
     int box_count;
-    int box_key_type[MAX_BOXES];
+    int box_key_types[MAX_BOXES];
     int box_keys[MAX_BOXES][MAX_KEYS];
     int box_keys_count[MAX_BOXES];
     bool b2b[MAX_BOXES][MAX_BOXES];
@@ -82,6 +82,10 @@ namespace solution {
         key_order.clear();
     }
 
+    void add_key( int type ) {
+        key_types[key_count ++] = type;
+    }
+
     class Solution: public ISolution {
     public:
         void init() {
@@ -93,7 +97,7 @@ namespace solution {
             for ( int i = 0; i < init_keys_count; ++ i )
                 cin >> init_keys[i];
             for ( int i = 0; i < box_count; ++ i ) {
-                cin >> box_key_type[i] >> box_keys_count[i];
+                cin >> box_key_types[i] >> box_keys_count[i];
                 for ( int j = 0; j < box_keys_count[i]; ++ j ) {
                     cin >> box_keys[i][j];
                 }
@@ -103,18 +107,26 @@ namespace solution {
 
         void solve() {
             // 鍵を登録する
-            //
+            for ( int i = 0; i < init_keys_count; ++ i ) {
+                add_key(init_keys[i]);
+            }
+            for ( int i = 0; i < box_count; ++ i ) {
+                for ( int j = 0; j < box_keys_count[i]; ++ j ) {
+                    add_key(box_keys[i][j]);
+                }
+            }
+
             // 鍵ごとに開くことができる箱を計算する
-            //
+            
             // ある箱fromについて、fromに含まれる鍵で開くことができる箱toがあればb2b[from][to]をtrueにする
             // ワーシャルフロイド法でb2bの間接的な参照になっている部分を接続する
-            // 
+            
             // ある鍵fromについて、fromで開くことができる箱に含まれる鍵toがあればk2k[from][to]をtrueにする
             // ワーシャルフロイド法でk2kの間接的な参照になっている部分を接続する
-            //
+            
             // b2b, k2kについてトポロジカルソートを行い、その結果をbox_order, key_orderに格納する（変形が必要）
             // トポロジカルソートが失敗した場合はIMPOSSIBLE
-            //
+            
             // Weight(key_id, box_id) = box_count - box_order[box_id]
             // で表される二部グラフGを生成して最大マッチングを求める
         }
