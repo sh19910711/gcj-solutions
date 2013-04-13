@@ -20,6 +20,10 @@
 #include <cstring>
 #include <cmath>
 
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/topological_sort.hpp>
+#include <boost/graph/graphviz.hpp>
+
 // @snippet<sh19910711/contest:solution/interface.cpp>
 namespace solution {
     class ISolution {
@@ -51,6 +55,7 @@ namespace solution {
 
     typedef map <int, int> Map;
     typedef set <int> Set;
+    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS> Graph;
 
     const int MAX_BOXES = 211;
     const int MAX_KEYS = 411;
@@ -111,7 +116,7 @@ namespace solution {
             return true;
         }
 
-        void solve() {
+        bool solve() {
             // 鍵を登録する
             for ( int i = 0; i < init_keys_count; ++ i ) {
                 add_key(init_keys[i]);
@@ -179,13 +184,49 @@ namespace solution {
             
             // b2b, k2kについてトポロジカルソートを行い、その結果をbox_order, key_orderに格納する（変形が必要）
             // トポロジカルソートが失敗した場合はIMPOSSIBLE
+            {
+                // b2b
+                Graph G(key_count);
+                for ( int i = 0; i < key_count; ++ i )
+                    for ( int j = 0; j < key_count; ++ j )
+                        if ( b2b[i][j] )
+                            boost::add_edge(i, j, G);
+                VI order;
+                boost::topological_sort(G, back_inserter(order));
+                reverse(order.begin(), order.end());
+                int index = 0;
+                for ( VI::iterator it_i = order.begin(); it_i != order.end(); ++ it_i ) {
+                    box_order[*it_i] = index ++;
+                }
+            }
+            {
+                // k2k
+                Graph G(key_count);
+                for ( int i = 0; i < key_count; ++ i )
+                    for ( int j = 0; j < key_count; ++ j )
+                        if ( k2k[i][j] )
+                            boost::add_edge(i, j, G);
+                VI order;
+                boost::topological_sort(G, back_inserter(order));
+                reverse(order.begin(), order.end());
+                int index = 0;
+                for ( VI::iterator it_i = order.begin(); it_i != order.end(); ++ it_i ) {
+                    key_order[*it_i] = index ++;
+                }
+            }
             
             // Weight(key_id, box_id) = box_count - box_order[box_id]
             // で表される二部グラフGを生成して最大マッチングを求める
         }
 
-        void output() {
-            cout << "hoge" << endl;
+        void output( int test_no, bool result ) {
+            cout << "Case #" << test_no << ": ";
+            if ( result ) {
+                cout << "hoge";
+            } else {
+                cout << "IMPOSSIBLE";
+            }
+            cout << endl;
         }
 
         int run() {
@@ -194,8 +235,7 @@ namespace solution {
             for ( int i = 0; i < tests; ++ i ) {
                 init();
                 input();
-                solve();
-                output();
+                output(i+1, solve());
             }
             return 0;
         }
