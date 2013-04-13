@@ -157,12 +157,35 @@ namespace solution {
             
             // ある鍵fromについて、fromで開くことができる箱に含まれる鍵toがあればk2k[from][to]をtrueにする
             // ワーシャルフロイド法でk2kの間接的な参照になっている部分を接続する
+            for ( int from = 0; from < key_count; ++ from ) {
+                for ( int i = 0; i < key_open_boxes_count[from]; ++ i ) {
+                    int box = key_open_boxes[from][i];
+                    for ( int j = 0; j < box_keys_count[box]; ++ j ) {
+                        int to = box_key_ids[box][j];
+                        if ( from == to )
+                            continue;
+                        k2k[from][to] = true;
+                    }
+                }
+            }
+            for ( int k = 0; k < key_count; ++ k ) {
+                for ( int i = 0; i < key_count; ++ i ) {
+                    for ( int j = 0; j < key_count; ++ j ) {
+                        if ( k2k[i][k] && k2k[k][j] )
+                            k2k[i][j] = true;
+                    }
+                }
+            }
             
             // b2b, k2kについてトポロジカルソートを行い、その結果をbox_order, key_orderに格納する（変形が必要）
             // トポロジカルソートが失敗した場合はIMPOSSIBLE
             
             // Weight(key_id, box_id) = box_count - box_order[box_id]
             // で表される二部グラフGを生成して最大マッチングを求める
+        }
+
+        void output() {
+            cout << "hoge" << endl;
         }
 
         int run() {
