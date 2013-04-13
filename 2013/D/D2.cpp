@@ -55,7 +55,7 @@ namespace solution {
 
     typedef map <int, int> Map;
     typedef set <int> Set;
-    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS> Graph;
+    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS> DiGraph;
 
     const int MAX_BOXES = 211;
     const int MAX_KEYS = 411;
@@ -75,6 +75,7 @@ namespace solution {
     bool k2k[MAX_KEYS][MAX_KEYS];
     Map box_order;
     Map key_order;
+    int result_order[MAX_BOXES];
 
     void global_init() {
         for ( int i = 0; i < MAX_KEYS; ++ i )
@@ -186,35 +187,65 @@ namespace solution {
             // トポロジカルソートが失敗した場合はIMPOSSIBLE
             {
                 // b2b
-                Graph G(key_count);
-                for ( int i = 0; i < key_count; ++ i )
-                    for ( int j = 0; j < key_count; ++ j )
+                DiGraph G(box_count);
+                for ( int i = 0; i < box_count; ++ i )
+                    for ( int j = 0; j < box_count; ++ j )
                         if ( b2b[i][j] )
-                            boost::add_edge(i, j, G);
+                            boost::add_edge(box_count - i - 1, box_count - j - 1, G);
                 VI order;
-                boost::topological_sort(G, back_inserter(order));
+                try {
+                    boost::topological_sort(G, back_inserter(order));
+                } catch( boost::not_a_dag e ) {
+                    return false;
+                }
                 reverse(order.begin(), order.end());
+                for ( int i = 0; i < box_count; ++ i ) {
+                    order[i] = box_count-order[i]-1;
+                }
                 int index = 0;
                 for ( VI::iterator it_i = order.begin(); it_i != order.end(); ++ it_i ) {
                     box_order[*it_i] = index ++;
                 }
+
+                // もう一度適当なやつで提出してみる
+                int cnt[MAX_KEYS];
+                fill( cnt, cnt+MAX_KEYS, 0 );
+                for ( int i = 0; i < init_keys_count; ++ i )
+                    cnt[init_keys[i]] ++;
+                for ( int i = 0; i < box_count; ++ i ) {
+                    int box = order[i];
+                    int needed = box_key_types[box];
+                    if ( cnt[needed] == 0 )
+                        return false;
+                    cnt[needed] --;
+                    for ( int j = 0; j < box_keys_count[box]; ++ j ) {
+                        int key = box_keys[box][j];
+                        cnt[key] ++;
+                    }
+                }
+                for ( int i = 0; i < box_count; ++ i )
+                    result_order[i] = order[i] + 1;
             }
             {
                 // k2k
-                Graph G(key_count);
+                DiGraph G(key_count);
                 for ( int i = 0; i < key_count; ++ i )
                     for ( int j = 0; j < key_count; ++ j )
                         if ( k2k[i][j] )
                             boost::add_edge(i, j, G);
                 VI order;
-                boost::topological_sort(G, back_inserter(order));
+                try {
+                    boost::topological_sort(G, back_inserter(order));
+                } catch( char* str ) {
+                    return false;
+                }
                 reverse(order.begin(), order.end());
                 int index = 0;
                 for ( VI::iterator it_i = order.begin(); it_i != order.end(); ++ it_i ) {
                     key_order[*it_i] = index ++;
                 }
             }
-            
+
             // Weight(key_id, box_id) = box_count - box_order[box_id]
             // で表される二部グラフGを生成して最大マッチングを求める
         }
@@ -222,7 +253,11 @@ namespace solution {
         void output( int test_no, bool result ) {
             cout << "Case #" << test_no << ": ";
             if ( result ) {
-                cout << "hoge";
+                for ( int i = 0; i < box_count; ++ i ) {
+                    cout << result_order[i];
+                    if ( i + 1 < box_count )
+                        cout << " ";
+                }
             } else {
                 cout << "IMPOSSIBLE";
             }
