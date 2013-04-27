@@ -50,41 +50,24 @@ namespace solution {
     using namespace std;
 
     const int SIZE = 11;
-    const int BIT_SIZE = 1 << SIZE;
     const int ENERGY_MAX = 6;
 
     int E;
     int R;
     int N;
     int V[SIZE];
-    LL dp[BIT_SIZE][ENERGY_MAX];
 
-    LL calc() {
-        for ( int i = 0; i < BIT_SIZE; ++ i )
-            for ( int j = 0; j < ENERGY_MAX; ++ j )
-                dp[i][j] = 0;
+    void calc_init() {
+    }
 
-        for ( int i = 0; i < BIT_SIZE; ++ i ) {
-            for ( int j = 0; j <= E; ++ j ) {
-                // (i, j) = (使用済み, 残りのエネルギー)
-                for ( int k = 0; k < N; ++ k ) {
-                    int bk = 1 << k;
-                    if ( i & bk )
-                        continue;
-                    int ni = i | bk;
-                    for ( int t = 0; t <= j; ++ t ) {
-                        // t = 使用するエネルギー
-                        int nj = min(E, j - t + R);
-                        int g = t * V[k];
-                        dp[ni][nj] = max(dp[ni][nj], dp[i][j] + g);
-                    }
-                }
-            }
-        }
-
+    LL calc( int x, int e ) {
+        if ( x >= N )
+            return 0;
         LL res = 0;
-        for ( int i = 0; i < ENERGY_MAX; ++ i )
-            res = max(res, dp[BIT_SIZE - 1][i]);
+        for ( int t = 0; t <= e; ++ t ) {
+            int ne = min(E, e - t + R );
+            res = max(res, V[x] * t + calc(x + 1, ne));
+        }
         return res;
     }
 
@@ -100,7 +83,8 @@ namespace solution {
         }
 
         LL solve() {
-            return calc();
+            calc_init();
+            return calc(0, E);
         }
 
         void output( int test_no, LL result ) {
