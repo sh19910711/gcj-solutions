@@ -82,19 +82,19 @@ namespace solution {
         }
     }
 
-    int calc_numbers() {
-        int res = 0;
+    LL calc_numbers() {
+        LL res = 0;
         for ( int i = 0; i < n; ++ i ) {
             if ( A[i] >= k ) {
-                int l = i - B[i] + 1;
-                int r = n - i - k + 1;
+                LL l = i - B[i] + 1;
+                LL r = n - i - k + 1;
                 res += l * r;
             }
         }
         return res;
     }
 
-    int solve() {
+    LL solve() {
         n = s.size();
         calc_consecutives();
         return calc_numbers();
@@ -106,7 +106,7 @@ namespace solution {
             return cin >> s >> k;
         }
 
-        void output( int test_no, int result ) {
+        void output( int test_no, LL result ) {
             cout << "Case #" << test_no << ": " << result << endl;
         }
         
